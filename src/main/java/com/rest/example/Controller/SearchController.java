@@ -19,7 +19,7 @@ public class SearchController {
     @Autowired
     SearchService searchService;
 
-    // will return 5 related articles with url
+    //returns 5 related articles with their URLs.
     @GetMapping("/findRelatedArticles")
     public ResponseEntity findRelatedArticles(@RequestParam String query) throws IOException, ParseException {
 
@@ -33,7 +33,7 @@ public class SearchController {
 
     }
 
-    // will return page using page id
+    // returns the page extract and description based on Article id
     @GetMapping("/findArticleById")
     public ResponseEntity findArticleById(@RequestParam int id) throws IOException, ParseException {
 
