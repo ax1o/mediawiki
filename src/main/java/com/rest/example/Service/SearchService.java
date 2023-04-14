@@ -13,7 +13,7 @@ import java.util.Scanner;
 public class SearchService {
 
 
-    //fetches 5 related articles to query with url
+    //returns 5 related articles with their URLs.
     public JSONObject findRelatedArticles(String query) throws IOException, ParseException {
         //preparing connection
         URL url = new URL("https://en.wikipedia.org/w/rest.php/v1/search/page?q=" + query + "&limit=5");
@@ -87,7 +87,7 @@ public class SearchService {
         return json;
     }
 
-    //gets the page text by title
+    //finds the page by title.
     public JSONObject getContentByTitle(String title) throws IOException, ParseException {
 
         //preparing connection
