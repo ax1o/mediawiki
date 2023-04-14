@@ -10,19 +10,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+
 
 @SpringBootTest
 class ExampleApplicationTests {
 
 	@Mock
 	SearchService searchService;
-	@Test
-	void contextLoads() {
-	}
 
 	@Test
 	public void testFindArticleById() throws IOException, ParseException, JSONException {
@@ -47,6 +42,7 @@ class ExampleApplicationTests {
 	@Test
 	public void testGetContentByTitle() throws ParseException, IOException, JSONException {
 
+		//setup
 		String var = "Java";
 
 		//creating expected response
@@ -66,6 +62,7 @@ class ExampleApplicationTests {
 	@Test
 	public void testFindRelatedArticles() throws IOException, ParseException, JSONException {
 
+		//setup
 		String var = "earth";
 
 		//creating expected response
