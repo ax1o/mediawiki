@@ -10,7 +10,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import static org.junit.Assert.*;
+import org.apache.http.entity.ContentType;
+
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 
 @SpringBootTest
@@ -20,21 +27,28 @@ class ExampleApplicationTests {
 	SearchService searchService;
 
 	@Test
-	public void testFindArticleById() throws IOException, ParseException, JSONException {
+	public void testFindArticleById() throws IOException {
 
 		//setup
 		int id = 38930;
 
-		//creating expected response
-		String response = "{\"query\":{\"pages\":{\"38930\":{\"title\":\"Title\",\"extract\":\"Extract\",\"description\":\"Description\"}}}}";
-		JSONObject expected = (JSONObject) new JSONParser().parse(response);
-		Mockito.when(searchService.findArticleById(id)).thenReturn(expected);
+		URL url = new URL("https://en.wikipedia.org/w/api.php?action=query&prop=extracts|description&pageids=" + id + "&format=json");
+		HttpURLConnection con = (HttpURLConnection) url.openConnection();
+		con.setRequestProperty("Content-Type", "application/json");
+		con.setRequestMethod("GET");
 
-		//creating actual response
-		JSONObject actual = searchService.findArticleById(id);
+		//checking response code
+		assertEquals(con.getResponseMessage(), 200, con.getResponseCode());
 
-		//comparing actual and expected
-		JSONAssert.assertEquals(expected.toJSONString(),actual.toJSONString(),true);
+		//checking media type
+		String jsonMimeType = "application/json; charset=utf-8";
+
+		String mimeType = con.getContentType();
+
+		System.out.println(mimeType);
+
+		assertEquals(jsonMimeType,mimeType);
+
 
 
 	}
