@@ -5,50 +5,58 @@ import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import static org.junit.Assert.*;
 import org.apache.http.entity.ContentType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.json.simple.JSONObject;
 
 
 @SpringBootTest
 class ExampleApplicationTests {
 
 	@Mock
-	SearchService searchService;
+	private RestTemplate restTemplate;
+
+	@InjectMocks
+	private SearchService searchService ;
 
 	@Test
-	public void testFindArticleById() throws IOException {
+	public void testFindArticleById() throws IOException, ParseException, JSONException {
 
 		//setup
 		int id = 38930;
 
-		URL url = new URL("https://en.wikipedia.org/w/api.php?action=query&prop=extracts|description&pageids=" + id + "&format=json");
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestProperty("Content-Type", "application/json");
-		con.setRequestMethod("GET");
+		//reading expected json
+		JSONParser parser = new JSONParser();
+		Object obj = parser.parse(new FileReader("src/main/resources/findByID.json"));
+		JSONObject mockJson = (JSONObject)obj;
 
-		//checking response code
-		assertEquals(con.getResponseMessage(), 200, con.getResponseCode());
+		//mocking behaviour
+		Mockito
+				.when(restTemplate.getForEntity("https://en.wikipedia.org/w/api.php?action=query&prop=extracts|description&pageids=" + id + "&format=json",JSONObject.class))
+				.thenReturn(new ResponseEntity(mockJson,HttpStatus.OK));
 
-		//checking media type
-		String jsonMimeType = "application/json; charset=utf-8";
+		//actual
+		JSONObject actualJson = searchService.findArticleById(id);
 
-		String mimeType = con.getContentType();
-
-		System.out.println(mimeType);
-
-		assertEquals(jsonMimeType,mimeType);
-
+		JSONAssert.assertEquals(mockJson.toJSONString(),actualJson.toJSONString(),false);
 
 
 	}
@@ -57,38 +65,47 @@ class ExampleApplicationTests {
 	public void testGetContentByTitle() throws ParseException, IOException, JSONException {
 
 		//setup
-		String var = "Java";
+		String var = "earth";
 
-		//creating expected response
-		String response = "{ \"parse\":{\"wikitext\":{\"s\":\"Extract\" },\"title\":\"Title\",\"pageid\":69336}} ";
-		JSONObject expected = (JSONObject) new JSONParser().parse(response);
-		Mockito.when(searchService.getContentByTitle(var)).thenReturn(expected);
+		//reading expected json
+		JSONParser parser = new JSONParser();
+		Object obj = parser.parse(new FileReader("src/main/resources/findByTitle.json"));
+		JSONObject mockJson = (JSONObject)obj;
 
-		//creating actual response
-		JSONObject actual = searchService.getContentByTitle(var);
+		//mocking behaviour
+		Mockito
+				.when(restTemplate.getForEntity("https://en.wikipedia.org/w/api.php?action=parse&prop=wikitext&page="+var+"&format=json",JSONObject.class))
+				.thenReturn(new ResponseEntity(mockJson,HttpStatus.OK));
 
-		//comparing actual and expected
-		JSONAssert.assertEquals(expected.toJSONString(),actual.toJSONString(),true);
+		//actual
+		JSONObject actualJson = searchService.getContentByTitle(var);
+
+		JSONAssert.assertEquals(mockJson.toJSONString(),actualJson.toJSONString(),false);
+
 
 
 	}
 
 	@Test
 	public void testFindRelatedArticles() throws IOException, ParseException, JSONException {
-
 		//setup
 		String var = "earth";
 
-		//creating expected response
-		String response = "{\"pages\": [{\"thumbnail\":{},\"matched_title\":\"\",\"description\":\"Description\",\"id\":\"38930\",\"title\":\"Title\",\"excerpt\":\"Excerpt\",\"key\":\"Key\"},{},{},{},{}]}";
-		JSONObject expected = (JSONObject) new JSONParser().parse(response);
-		Mockito.when(searchService.findRelatedArticles(var)).thenReturn(expected);
+		//reading expected json
+		JSONParser parser = new JSONParser();
+		Object obj = parser.parse(new FileReader("src/main/resources/findRelatedArticles.json"));
+		JSONObject mockJson = (JSONObject)obj;
 
-		//creating actual response
-		JSONObject actual = searchService.findRelatedArticles(var);
+		//mocking behaviour
+		Mockito
+				.when(restTemplate.getForEntity("https://en.wikipedia.org/w/rest.php/v1/search/page?q=" + var + "&limit=5",JSONObject.class))
+				.thenReturn(new ResponseEntity(mockJson,HttpStatus.OK));
 
-		//comparing actual and expected
-		JSONAssert.assertEquals(expected.toJSONString(),actual.toJSONString(),true);
+		//actual
+		JSONObject actualJson = searchService.findRelatedArticles(var);
+
+		JSONAssert.assertEquals(mockJson.toJSONString(),actualJson.toJSONString(),false);
+
 
 	}
 

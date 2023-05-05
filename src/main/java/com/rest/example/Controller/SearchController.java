@@ -27,7 +27,7 @@ public class SearchController {
         try {
             json = searchService.findRelatedArticles(query);
         } catch (Exception e) {
-            return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST`);
         }
         return new ResponseEntity<>(json, HttpStatus.ACCEPTED);
 
